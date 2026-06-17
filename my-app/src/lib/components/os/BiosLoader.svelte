@@ -76,8 +76,8 @@
                                                                                                                 `;
 
 const glitchChars = "[]()<>^=*+@#%{}";
+    const CA = "UWUy7J86LUiBv5SjAUZ53LMGhtnqvbQ7QNSSkyupump";
     
-    // 1. Move color map generation OUTSIDE onMount so it executes instantly
     const asciiLines = originalAscii.split('\n');
     const colorMap = asciiLines.map((line, y) => {
         return line.split('').map((char, x) => {
@@ -103,7 +103,6 @@ const glitchChars = "[]()<>^=*+@#%{}";
         });
     });
 
-    // 2. Refactor frame generation to accept an isGlitching boolean
     const generateFrame = (isGlitching = false) => {
         let newHtml = '';
         for (let y = 0; y < asciiLines.length; y++) {
@@ -113,7 +112,6 @@ const glitchChars = "[]()<>^=*+@#%{}";
                 const origChar = asciiLines[y][x];
                 let displayChar = origChar;
                 
-                // Only roll random numbers if glitching is active
                 if (isGlitching && origChar !== ' ' && origChar !== '\n') {
                     if (Math.random() < 0.15) {
                         displayChar = glitchChars[Math.floor(Math.random() * glitchChars.length)];
@@ -138,48 +136,73 @@ const glitchChars = "[]()<>^=*+@#%{}";
         return newHtml;
     };
 
-    // 3. Initialize the state instantly with a NON-glitching frame.
-    // This prevents Hydration Errors while ensuring the logo renders at 0ms alongside the title.
     let displayHtml = $state(generateFrame(false));
     let glitchInterval;
 
     const bootSequence = [
-        "AMIBIOS(C)2026 Unicorn, Inc.",
-        "SVELTEKIT PFP GENERATOR ACPI BIOS Revision 3105",
+        "Unicorn Mememtic Warfare LLC 2026.",
+        "SVELTEKIT OS ACPI BIOS Revision 3105",
         "CPU: Intel(R) Core(TM) i9-10980XE CPU @ 3.00GHz",
         "Speed: 3000MHz",
         " ",
         "Total Memory: 65536MB (DDR4-2133)",
-        " ",
         "USB Devices total: 1 Drive, 3 Keyboards, 1 Mouse, 4 Hubs",
-        "USB Drive #0: Seagate Expansion Desk 0915",
-        " ",
-        "Detected ATA/ATAPI Devices...",
-        " ",
-        "Please enter setup to recover BIOS setting.",
-        "After setting up Intel(R) Optane Memory or the RAID configuration was built,",
-        "SATA Mode Selection must be changed to RAID mode to avoid unknown issues.",
-        "If OS was previously installed as AHCI, set SATA mode to AHCI in BIOS.",
-        "Press F1 to Run SETUP"
+        " "
     ];
 
-    onMount(() => {
-        // 4. Start the glitch interval ONLY on the client
+    // Helper function to push text to the screen organically
+    const addLine = async (text, delay = 50) => {
+        await new Promise(r => setTimeout(r, Math.random() * delay + delay));
+        lines = [...lines, text];
+    };
+
+    onMount(async () => {
+        // Start visual glitch effect
         glitchInterval = setInterval(() => {
             displayHtml = generateFrame(true);
         }, 50);
 
-        // 5. Start typing text
-        let delay = 0;
-        bootSequence.forEach((line, index) => {
-            setTimeout(() => {
-                lines = [...lines, line];
-                if (index === bootSequence.length - 1) {
-                    setTimeout(() => isBooting.set(false), 2000); 
-                }
-            }, delay);
-            delay += Math.random() * 80 + 20; 
-        });
+        // 1. Rapidly print initial hardware sequence
+        for (const line of bootSequence) {
+            await addLine(line, 20);
+        }
+
+        // 2. Wait for actual website assets (DOM, Images, CSS) to load
+        await addLine("Mounting Virtual File System...", 100);
+        if (document.readyState !== 'complete') {
+            await new Promise(resolve => window.addEventListener('load', resolve));
+        }
+        await addLine("[OK] Core OS assets loaded into memory.", 50);
+        await addLine(" ", 10);
+
+        // 3. Functional Network Pre-fetching (Warms up the cache for UwUSidebar)
+        await addLine("Initializing Market Data Streams...", 200);
+        try {
+            // We ping Dexscreener here so the browser caches the response instantly
+            await fetch(`https://api.dexscreener.com/latest/dex/tokens/${CA}`);
+            await addLine("[OK] Secure connection to Dexscreener established.", 50);
+        } catch(e) {
+            await addLine("[WARN] Market stream timeout. Working offline.", 50);
+        }
+        
+        await addLine("Synchronizing Historical Charts...", 100);
+        try {
+            // Ping your secure Birdeye route
+            await fetch('/api/uwu-chart');
+            await addLine("[OK] OHLCV historical index synced.", 50);
+        } catch(e) {
+            await addLine("[WARN] Historical index unavailable.", 50);
+        }
+
+        // 4. Final OS Handoff
+        await addLine(" ", 10);
+        await addLine("Starting Desktop Environment...", 300);
+        
+        // Brief dramatic pause before booting
+        await new Promise(r => setTimeout(r, 600)); 
+        
+        // Hides the BIOS screen and reveals the desktop
+        isBooting.set(false); 
     });
 
     onDestroy(() => {
@@ -192,7 +215,10 @@ const glitchChars = "[]()<>^=*+@#%{}";
         <div class="logo-container">
             <pre class="ascii-unicorn">{@html displayHtml}</pre>
         </div>
-        <h1 class="megatrends-title">Unicorn</h1>
+        <div class="title-container">
+            <h1 class="megatrends-title">Unicorn</h1>
+            <h2 class="megatrends-subtitle">it's in the name</h2>
+        </div>
     </div>
     
     <div class="boot-text">
@@ -206,87 +232,96 @@ const glitchChars = "[]()<>^=*+@#%{}";
     .bios-screen {
         width: 100vw;
         height: 100vh;
-        background-color: #111; /* Slight off-black to mimic monitors */
+        background-color: #111; 
         color: #fff;
         font-family: 'Courier New', Courier, monospace;
-        padding: 2rem 3rem; /* Push it away from the absolute edge like the photo */
+        padding: 2rem 4rem; 
         box-sizing: border-box;
         overflow: hidden;
         display: flex;
         flex-direction: column;
-        justify-content: flex-start; /* Align top instead of center */
+        justify-content: flex-start; 
     }
 
-    /* Flexbox layout to put the logo and title side-by-side */
     .bios-header {
         display: flex;
-        align-items: center; /* Vertically aligns title with logo */
-        gap: 1.5rem;
+        align-items: center; 
+        gap: 3rem; /* Increased gap to give the larger ASCII breathing room */
         margin-bottom: 2rem;
     }
 
-    /* Scaling the ASCII down to act as a tight, clean logo */
     .logo-container {
-        /* Prevents flexbox from squishing the container */
         flex-shrink: 0; 
     }
 
     .ascii-unicorn {
         font-family: 'Courier New', Courier, monospace;
         font-weight: bold;
-        /* Drastically reduced font-size perfectly scales it down to logo-size */
-        font-size: 3px; 
-        line-height: 3px; 
+        /* Doubled the font size to make the ASCII much bigger on Desktop */
+        font-size: 5px; 
+        line-height: 5px; 
         letter-spacing: 0;
         margin: 0;
     }
 
+    .title-container {
+        display: flex;
+        flex-direction: column;
+    }
+
     .megatrends-title {
-        font-family: 'Times New Roman', Times, serif; /* The classic AMIBIOS serif look */
-        font-size: 4.5rem;
+        font-family: 'Times New Roman', Times, serif; 
+        font-size: 5rem;
         font-weight: bold;
         color: #eeeeee;
         margin: 0;
         letter-spacing: -0.02em;
+        line-height: 1;
+    }
+    
+    .megatrends-subtitle {
+        font-family: 'Courier New', Courier, monospace; /* Hacker terminal font */
+        font-size: 1rem;
+        
+        color: #FCD303; /* Cyberpunk Alert Yellow */
+        margin: 0;
+        margin-top: 8px;
+        letter-spacing: 0.2em; /* Spaced out for a cinematic look */
+        /* Subtle neon glow */
+        text-shadow: 0 0 10px rgba(252, 211, 3, 0.8); 
     }
 
     .boot-text {
         width: 100%;
-        text-align: left; /* Keep it left aligned like the photo */
+        text-align: left; 
     }
 
     .boot-text p {
         margin: 0 0 0.4rem 0;
         font-size: 1.1rem;
         font-weight: bold;
-        color: #e0e0e0; /* Off-white typical of old monitors */
+        color: #e0e0e0; 
         text-shadow: 0 0 1px rgba(255, 255, 255, 0.4);
     }
+
     /* Mobile Responsiveness */
     @media (max-width: 768px) {
         .bios-screen {
-            padding: 1rem; /* Reclaim horizontal real estate */
+            padding: 1rem; 
         }
 
         .bios-header {
-            flex-direction: column; /* Stack the logo and title on small screens */
+            flex-direction: column; 
             align-items: flex-start;
-            gap: 0.5rem;
+            gap: 1rem;
             margin-bottom: 1rem;
         }
 
         .ascii-unicorn {
-            font-size: 2px; /* Shrink the grid slightly to guarantee it fits */
-            line-height: 2px;
-        }
-
-        .megatrends-title {
-            font-size: 2.5rem; /* Prevent the title from blowing out the viewport */
-        }
-
-        .boot-text p {
-            font-size: 0.85rem; /* Scale down the boot text so long lines wrap cleanly */
-            margin: 0 0 0.2rem 0;
+            /* Kept smaller on mobile so the grid doesn't blow out the viewport */
+            font-size: 3px; 
+            line-height: 3px;
         }
     }
+        
 </style>

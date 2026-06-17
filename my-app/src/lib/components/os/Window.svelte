@@ -1,30 +1,58 @@
 <script>
-import { closeWindow, focusWindow } from '$lib/stores/os.js';
+    import { closeWindow, focusWindow, minimizeWindow } from '$lib/stores/os.js';
 
-    // Accept initialWidth and initialHeight from the parent
-    let { id, title, zIndex, initialWidth = 400, initialHeight = 300 } = $props();
+    let { 
+        id, title, zIndex, isMinimized, 
+        initialWidth = 400, initialHeight = 300,
+        minWidth = 250, minHeight = 150 
+    } = $props();
 
-    // Initialize state using the new dynamic props
     let width = $state(initialWidth);
     let height = $state(initialHeight);
     
-    // Dynamically center based on the requested size
     let left = $state(window.innerWidth / 2 - (initialWidth / 2)); 
     let top = $state(window.innerHeight / 2 - (initialHeight / 2));
+
+    // --- MAXIMIZE LOGIC ---
+    let isMaximized = $state(false);
+    let preMaxState = { top: 0, left: 0, width: 0, height: 0 };
+
+    function toggleMaximize() {
+        if (!isMaximized) {
+            // 1. Save the exact current state before maximizing
+            preMaxState = { top, left, width, height };
+
+            // 2. Snap to full screen (accounting for the 35px taskbar)
+            top = 0;
+            left = 0;
+            width = window.innerWidth;
+            height = window.innerHeight - 35;
+            isMaximized = true;
+        } else {
+            // 3. Restore down to previous size and position
+            top = preMaxState.top;
+            left = preMaxState.left;
+            width = preMaxState.width;
+            height = preMaxState.height;
+            isMaximized = false;
+        }
+    }
 
     // --- DRAG LOGIC ---
     let isDragging = false;
     let dragStartX, dragStartY, initialLeft, initialTop;
 
     function onDragStart(e) {
-        if (e.button !== 0) return; // Only react to Left Click
+        // Prevent dragging if the window is maximized!
+        if (e.button !== 0 || isMaximized) return; 
+        
         isDragging = true;
         dragStartX = e.clientX;
         dragStartY = e.clientY;
         initialLeft = left;
         initialTop = top;
         
-        focusWindow(id); // Bring to front when grabbed
+        focusWindow(id);
 
         window.addEventListener('mousemove', onDrag);
         window.addEventListener('mouseup', onDragEnd);
@@ -47,8 +75,10 @@ import { closeWindow, focusWindow } from '$lib/stores/os.js';
     let resizeStartW, resizeStartH;
 
     function onResizeStart(e) {
-        e.stopPropagation(); // Prevent triggering the window focus/drag
-        if (e.button !== 0) return;
+        e.stopPropagation();
+        // Prevent resizing if the window is maximized!
+        if (e.button !== 0 || isMaximized) return;
+        
         isResizing = true;
         dragStartX = e.clientX;
         dragStartY = e.clientY;
@@ -61,9 +91,8 @@ import { closeWindow, focusWindow } from '$lib/stores/os.js';
 
     function onResize(e) {
         if (!isResizing) return;
-        // Ensure it doesn't get too small (min 250x150)
-        width = Math.max(250, resizeStartW + (e.clientX - dragStartX));
-        height = Math.max(150, resizeStartH + (e.clientY - dragStartY));
+        width = Math.max(minWidth, resizeStartW + (e.clientX - dragStartX));
+        height = Math.max(minHeight, resizeStartH + (e.clientY - dragStartY));
     }
 
     function onResizeEnd() {
@@ -71,18 +100,12 @@ import { closeWindow, focusWindow } from '$lib/stores/os.js';
         window.removeEventListener('mousemove', onResize);
         window.removeEventListener('mouseup', onResizeEnd);
     }
-
-    // --- MINIMIZE LOGIC ---
-    function minimizeWindow() {
-        // For now, this just closes the window. 
-        // Once we build a taskbar, we will update the OS store to handle true minimization.
-        closeWindow(id); 
-    }
 </script>
-
 <div 
     class="win98-window" 
+    class:maximized={isMaximized}
     style="
+        display: {isMinimized ? 'none' : 'flex'}; 
         z-index: {zIndex}; 
         top: {top}px; 
         left: {left}px; 
@@ -94,7 +117,12 @@ import { closeWindow, focusWindow } from '$lib/stores/os.js';
     <div class="title-bar" onmousedown={onDragStart}>
         <div class="title-bar-text">{title}</div>
         <div class="title-bar-controls">
-            <button aria-label="Minimize" onclick={minimizeWindow}>_</button>
+            <button aria-label="Minimize" onclick={(e) => { e.stopPropagation(); minimizeWindow(id); }}>_</button>
+            
+            <button aria-label="Maximize" onclick={(e) => { e.stopPropagation(); toggleMaximize(); }}>
+                {isMaximized ? '❐' : '☐'}
+            </button>
+            
             <button aria-label="Close" onclick={() => closeWindow(id)}>X</button>
         </div>
     </div>
@@ -117,6 +145,16 @@ import { closeWindow, focusWindow } from '$lib/stores/os.js';
         /* Adds a subtle classic shadow to floating windows */
         box-shadow: 2px 2px 0 rgba(0,0,0,0.5); 
     }
+    .maximized {
+        top: 0 !important;
+        left: 0 !important;
+        
+        /* 1. Viewport width MINUS the 320px UwU Sidebar */
+        width: calc(100vw - 320px) !important; 
+        
+        /* 2. Viewport height MINUS the 35px Taskbar */
+        height: calc(100dvh - 35px) !important; 
+    }
 
     .title-bar {
         background: #000080;
@@ -129,7 +167,7 @@ import { closeWindow, focusWindow } from '$lib/stores/os.js';
         /* Indicates to the user that this area is grab-able */
         cursor: default; 
     }
-
+    
     .title-bar-controls {
         display: flex;
         gap: 2px;
@@ -167,9 +205,10 @@ import { closeWindow, focusWindow } from '$lib/stores/os.js';
         z-index: 10;
         /* A classic ridged texture could be added here later, for now it's an invisible hit-box */
     }
+    
 
     /* =========================================
-       MOBILE OVERRIDES
+       MOBILE OVERRIDES (Cleaned up and merged)
        ========================================= */
     @media (max-width: 768px) {
         .win98-window {
@@ -189,27 +228,24 @@ import { closeWindow, focusWindow } from '$lib/stores/os.js';
         }
 
         .title-bar {
-            /* Remove dragging cursor implication */
+            /* Remove dragging cursor implication & give breathing room */
             cursor: default;
+            padding: 6px 4px 6px 6px !important;
         }
-    }
-    @media (max-width: 768px) {
-        /* ... your existing mobile overrides for .win98-window, .resize-handle, etc ... */
 
-        /* 1. Hide the minimize button entirely */
-        button[aria-label="Minimize"] {
+        /* Hide the minimize button entirely */
+        button[aria-label="Minimize"],
+        button[aria-label="Maximize"] {
             display: none !important;
         }
 
-        /* 2. Make the close button a much larger, touch-friendly target */
+        /* Make the close button a much larger, touch-friendly target */
         button[aria-label="Close"] {
             padding: 4px 16px !important;
             font-size: 1.2rem !important;
         }
-
-        /* Optional: Give the title bar slightly more breathing room for the bigger button */
-        .title-bar {
-            padding: 6px 4px 6px 6px !important;
+        .maximized { 
+            width: 100vw !important; 
         }
     }
 </style>
