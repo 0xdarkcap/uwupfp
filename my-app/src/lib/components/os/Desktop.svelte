@@ -8,6 +8,17 @@
     import PrivateersApp from './PrivateersApp.svelte';
     import NotepadApp from './NotepadApp.svelte';
     import UwUSidebar from './UwUSidebar.svelte';
+    import VideoPlayerApp from './VideoPlayerApp.svelte';
+
+    const desktopVideos = [
+        { 
+            id: 'vid-demo1', 
+            title: 'neuralink.mov', 
+            src: 'video/nerw.mp4', 
+            width: 640, 
+            height: 360 
+        },
+    ];
 
     const launchPfpApp = () => {
         // Boost size to 720x480 for better layout presentation on desktop
@@ -24,6 +35,9 @@
     };
     const launchNotepad = () => {
         openWindow('notepad', 'untitled - Notepad', 500, 400);
+    };
+    const launchVideo = (vid) => {
+        openWindow(vid.id, vid.title, vid.width + 12, vid.height + 40);
     };
     onMount(() => {
         launchPfpApp()
@@ -54,6 +68,12 @@
                 <div class="icon-placeholder">📝</div>
                 <span>Notepad</span>
             </button>
+            {#each desktopVideos as vid}
+            <button class="shortcut" onclick={() => launchVideo(vid)} ondblclick={() => launchVideo(vid)}>
+                <div class="icon-placeholder">🎞️</div>
+                <span>{vid.title}</span>
+            </button>
+        {/each}
         </div>
 
        {#each $activeWindows as win (win.id)}
@@ -90,6 +110,13 @@
                         <div class="app-content">
                             <NotepadApp />
                         </div>
+                    {:else if win.id.startsWith('vid-')}
+                    {@const videoData = desktopVideos.find(v => v.id === win.id)}
+                    <div class="app-content" style="padding: 0; background: #000;">
+                        {#if videoData}
+                            <VideoPlayerApp src={videoData.src} />
+                        {/if}
+                    </div>
                     {/if}
                 </Window>
             {/if}
