@@ -1,7 +1,6 @@
 <script>
     import { onMount } from 'svelte';
 
-    // 1. Define Layer Order (Bottom to Top) based on your screenshot
     const LAYER_ORDER = [
         'background', 'body', 'eyes', 'face', 'hair', 'costume', 'accessory', 'headgear', 'horn'
     ];
