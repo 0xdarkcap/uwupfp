@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     // No advanced logic needed, just a clean wrapper for the iframe
 </script>
 
@@ -14,7 +14,7 @@
         <div class="ie-address-row">
             <span class="ie-label">Address</span>
             <div class="ie-url-box">
-                <img src="https://www.google.com/s2/favicons?domain=privateersa.com&sz=16" alt="icon" class="favicon" onerror={(e) => e.target.style.display = 'none'}>
+                <img src="https://www.google.com/s2/favicons?domain=privateersa.com&sz=16" alt="icon" class="favicon" onerror={(e: any) => e.target.style.display = 'none'}>
                 https://privateersa.com/
             </div>
         </div>

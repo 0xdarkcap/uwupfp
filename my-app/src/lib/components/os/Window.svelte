@@ -1,5 +1,5 @@
-<script>
-    import { closeWindow, focusWindow, minimizeWindow } from '$lib/stores/os.js';
+<script lang="ts">
+    import { closeWindow, focusWindow, minimizeWindow } from '$lib/stores/os';
 
     let { 
         id, title, zIndex, isMinimized, 
@@ -40,9 +40,9 @@
 
     // --- DRAG LOGIC ---
     let isDragging = false;
-    let dragStartX, dragStartY, initialLeft, initialTop;
+    let dragStartX: number, dragStartY: number, initialLeft: number, initialTop: number;
 
-    function onDragStart(e) {
+    function onDragStart(e: MouseEvent) {
         // Prevent dragging if the window is maximized!
         if (e.button !== 0 || isMaximized) return; 
         
@@ -58,7 +58,7 @@
         window.addEventListener('mouseup', onDragEnd);
     }
 
-    function onDrag(e) {
+    function onDrag(e: MouseEvent) {
         if (!isDragging) return;
         left = initialLeft + (e.clientX - dragStartX);
         top = initialTop + (e.clientY - dragStartY);
@@ -72,9 +72,9 @@
 
     // --- RESIZE LOGIC ---
     let isResizing = false;
-    let resizeStartW, resizeStartH;
+    let resizeStartW: number, resizeStartH: number;
 
-    function onResizeStart(e) {
+    function onResizeStart(e: MouseEvent) {
         e.stopPropagation();
         // Prevent resizing if the window is maximized!
         if (e.button !== 0 || isMaximized) return;
@@ -89,7 +89,7 @@
         window.addEventListener('mouseup', onResizeEnd);
     }
 
-    function onResize(e) {
+    function onResize(e: MouseEvent) {
         if (!isResizing) return;
         width = Math.max(minWidth, resizeStartW + (e.clientX - dragStartX));
         height = Math.max(minHeight, resizeStartH + (e.clientY - dragStartY));

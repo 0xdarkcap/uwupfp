@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import { onMount } from 'svelte';
 
     const CA = "UWUy7J86LUiBv5SjAUZ53LMGhtnqvbQ7QNSSkyupump";
@@ -7,13 +7,13 @@
     let change24h = $state(0);
     let copied = $state(false);
     
-    let candles = $state([]);
+    let candles: any[] = $state([]);
     let chartHighStr = $state("0");
     let chartLowStr = $state("0");
     let currentPricePct = $state(50);
 
     // --- CUSTOM MEDIA PLAYER STATE ---
-    let audioRef;
+    let audioRef: any;
     let isPlaying = $state(false);
     let currentTrackIndex = $state(0);
     
@@ -50,7 +50,7 @@
         isPlaying = !isPlaying;
     }
 
-    function playTrack(index) {
+    function playTrack(index: number) {
         currentTrackIndex = index;
         if (audioRef) {
             audioRef.src = playlist[currentTrackIndex].url;
@@ -107,7 +107,7 @@
         setTimeout(() => copied = false, 2000);
     };
 
-    function processRealChartData(items, livePrice) {
+    function processRealChartData(items: any[], livePrice: number) {
         const chartData = items.slice(-14);
         const minLow = Math.min(...chartData.map(c => c.l), livePrice);
         const maxHigh = Math.max(...chartData.map(c => c.h), livePrice);
@@ -133,7 +133,7 @@
         });
     }
 
-    function generateFallbackChart(currentPrice, changePct) {
+    function generateFallbackChart(currentPrice: number, changePct: number) {
         const numCandles = 14;
         let generated = [];
         const startPrice = currentPrice / (1 + (changePct / 100));
@@ -174,7 +174,7 @@
     <div class="sidebar-content">
         <div class="logo-row">
             <div class="logo-inset">
-                <img src="/unicorn.png" alt="Unicorn" class="unicorn-pixel" onerror={(e) => e.target.style.display = 'none'} />
+                <img src="/unicorn.png" alt="Unicorn" class="unicorn-pixel" onerror={(e: any) => e.target.style.display = 'none'} />
             </div>
             <div class="header-right">
                 <h1 class="token-title">UwU Token</h1>

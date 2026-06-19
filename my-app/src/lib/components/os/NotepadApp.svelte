@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import { onMount } from 'svelte';
 
     let content = $state('');
@@ -38,7 +38,7 @@
         fileMenuOpen = false;
     };
 
-    const toggleFileMenu = (e) => {
+    const toggleFileMenu = (e: MouseEvent) => {
         e.stopPropagation();
         fileMenuOpen = !fileMenuOpen;
     };
