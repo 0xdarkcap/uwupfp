@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { BIRDEYE_API_KEY } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 
 export async function GET() {
     const CA = "UWUy7J86LUiBv5SjAUZ53LMGhtnqvbQ7QNSSkyupump";
@@ -9,7 +9,7 @@ export async function GET() {
     try {
         const response = await fetch(`https://public-api.birdeye.so/defi/ohlcv?address=${CA}&type=4H&time_from=${fromTime}&time_to=${toTime}`, {
             headers: {
-                "X-API-KEY": BIRDEYE_API_KEY, // The server injects the key securely here
+                "X-API-KEY": env.BIRDEYE_API_KEY || "", // The server injects the key securely here
                 "x-chain": "solana"
             }
         });

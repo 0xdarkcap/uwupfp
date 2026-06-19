@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import { onMount } from 'svelte';
 
     // 1. Define Layer Order (Bottom to Top) based on your screenshot
@@ -7,7 +7,7 @@
     ];
 
     // 2. Map Traits to your /static folder paths
-    const TRAITS = {
+    const TRAITS: Record<string, any[]> = {
         background: [
             { name: 'Teal', src: '/traits/background/background_01.png' }
         ],
@@ -118,13 +118,13 @@
         ]
     };
 
-    let currentTraits = $state({
+    let currentTraits: Record<string, number> = $state({
         background: 0, body: 0, eyes: 0, face: 0, 
         hair: 0, costume: 0, accessory: 0, headgear: 0, horn: 0
     });
 
     let activeTab = $state('body');
-    let canvasElement = $state(null);
+    let canvasElement: any = $state(null);
 
     // 3. Async Image Loading Engine
     async function renderPfp() {

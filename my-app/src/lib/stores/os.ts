@@ -1,10 +1,20 @@
 import { writable } from 'svelte/store';
 
+export interface WindowState {
+    id: string;
+    title: string;
+    isOpen: boolean;
+    isMinimized: boolean;
+    zIndex: number;
+    width: number;
+    height: number;
+}
+
 export const isBooting = writable(true);
-export const activeWindows = writable([]);
+export const activeWindows = writable<WindowState[]>([]);
 export const highestZIndex = writable(10);
 
-export const openWindow = (id, title, width = 400, height = 300) => {
+export const openWindow = (id: string, title: string, width = 400, height = 300) => {
     highestZIndex.update(n => n + 1);
     
     activeWindows.update(windows => {
@@ -22,7 +32,8 @@ export const openWindow = (id, title, width = 400, height = 300) => {
         return [...windows, { id, title, isOpen: true, isMinimized: false, zIndex: newZ, width, height }];
     });
 };
-export const closeWindow = (id) => {
+
+export const closeWindow = (id: string) => {
     activeWindows.update(windows => {
         const win = windows.find(w => w.id === id);
         if (win) win.isOpen = false;
@@ -30,7 +41,7 @@ export const closeWindow = (id) => {
     });
 };
 
-export const focusWindow = (id) => {
+export const focusWindow = (id: string) => {
     highestZIndex.update(n => n + 1);
     activeWindows.update(windows => {
         const win = windows.find(w => w.id === id);
@@ -41,13 +52,7 @@ export const focusWindow = (id) => {
     });
 };
 
-// ... existing imports and writable stores ...
-
-// Updated to include isMinimized: false
-
-
-// NEW: Minimize and Restore logic
-export const minimizeWindow = (id) => {
+export const minimizeWindow = (id: string) => {
     activeWindows.update(windows => {
         const win = windows.find(w => w.id === id);
         if (win) win.isMinimized = true;
@@ -55,7 +60,7 @@ export const minimizeWindow = (id) => {
     });
 };
 
-export const restoreWindow = (id) => {
+export const restoreWindow = (id: string) => {
     highestZIndex.update(n => n + 1);
     activeWindows.update(windows => {
         const win = windows.find(w => w.id === id);

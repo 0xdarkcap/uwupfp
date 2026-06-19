@@ -1,16 +1,16 @@
-<script>
+<script lang="ts">
     import { onMount, onDestroy } from 'svelte';
 
     const ROWS = 9;
     const COLS = 9;
     const MINES = 10;
 
-    let board = $state([]);
+    let board: any[] = $state([]);
     let gameOver = $state(false);
     let gameWon = $state(false);
     let flagsLeft = $state(MINES);
     let time = $state(0);
-    let timerInterval = null;
+    let timerInterval: any = null;
     let firstClick = $state(true);
 
     // Color map for the classic numbers
@@ -35,7 +35,7 @@
         board = newBoard;
     }
 
-    function placeMines(excludeR, excludeC) {
+    function placeMines(excludeR: number, excludeC: number) {
         let minesPlaced = 0;
         while (minesPlaced < MINES) {
             let r = Math.floor(Math.random() * ROWS);
@@ -73,7 +73,7 @@
         }, 1000);
     }
 
-    function revealCell(r, c) {
+    function revealCell(r: number, c: number) {
         if (gameOver || gameWon || board[r][c].isFlagged || board[r][c].isRevealed) return;
 
         if (firstClick) {
@@ -106,7 +106,7 @@
         checkWin();
     }
 
-    function toggleFlag(r, c, event) {
+    function toggleFlag(r: number, c: number, event: MouseEvent) {
         event.preventDefault();
         if (gameOver || gameWon || board[r][c].isRevealed) return;
 
@@ -147,7 +147,7 @@
     onMount(() => { initGame(); });
     onDestroy(() => { if (timerInterval) clearInterval(timerInterval); });
 
-    function formatNumber(num) {
+    function formatNumber(num: number) {
         return num.toString().padStart(3, '0');
     }
 </script>

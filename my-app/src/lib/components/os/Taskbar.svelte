@@ -1,10 +1,10 @@
-<script>
+<script lang="ts">
     import { onMount, onDestroy } from 'svelte';
-    import { activeWindows, openWindow, restoreWindow, focusWindow, minimizeWindow } from '$lib/stores/os.js';
+    import { activeWindows, openWindow, restoreWindow, focusWindow, minimizeWindow } from '$lib/stores/os';
 
     let startMenuOpen = $state(false);
     let time = $state('');
-    let clockInterval;
+    let clockInterval: any;
 
     // Hardcoded list of apps for the Start Menu
     const apps = [
@@ -31,12 +31,12 @@
     const toggleStartMenu = () => startMenuOpen = !startMenuOpen;
     const closeMenu = () => startMenuOpen = false;
 
-    const launchApp = (app) => {
+    const launchApp = (app: any) => {
         openWindow(app.id, app.title, app.w, app.h);
         startMenuOpen = false;
     };
 
-    const handleTaskbarClick = (win) => {
+    const handleTaskbarClick = (win: any) => {
         if (win.isMinimized) {
             restoreWindow(win.id);
         } else {

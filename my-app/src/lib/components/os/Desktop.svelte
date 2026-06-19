@@ -1,6 +1,6 @@
-<script>
+<script lang="ts">
     import { onMount } from 'svelte';
-    import { activeWindows, openWindow } from '$lib/stores/os.js';
+    import { activeWindows, openWindow } from '$lib/stores/os';
     import Window from './Window.svelte';
     import PfpMaker from './PfpMaker.svelte'; 
     import Taskbar from './Taskbar.svelte';
@@ -57,7 +57,7 @@
     const launchNotepad = () => {
         openWindow('notepad', 'untitled - Notepad', 500, 400);
     };
-    const launchVideo = (vid) => {
+    const launchVideo = (vid: any) => {
         // 1. Determine the safe available space on the user's screen
         const isDesktop = window.innerWidth > 768;
         // Subtract sidebar (320px) and a safety margin (40px)

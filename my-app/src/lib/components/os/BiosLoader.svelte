@@ -1,9 +1,9 @@
-<script>
+<script lang="ts">
     import { onMount, onDestroy } from 'svelte';
     import { isBooting } from '$lib/stores/os.js';
 
     // We use $state for variables that need to update the UI
-    let lines = $state([]);
+    let lines: string[] = $state([]);
     
     const originalAscii = `
                                                                                                                     
@@ -137,7 +137,7 @@ const glitchChars = "[]()<>^=*+@#%{}";
     };
 
     let displayHtml = $state(generateFrame(false));
-    let glitchInterval;
+    let glitchInterval: any;
 
     const bootSequence = [
         "Unicorn Mememtic Warfare LLC 2026.",
@@ -151,7 +151,7 @@ const glitchChars = "[]()<>^=*+@#%{}";
     ];
 
     // Helper function to push text to the screen organically
-    const addLine = async (text, delay = 50) => {
+    const addLine = async (text: string, delay: number = 50) => {
         await new Promise(r => setTimeout(r, Math.random() * delay + delay));
         lines = [...lines, text];
     };
