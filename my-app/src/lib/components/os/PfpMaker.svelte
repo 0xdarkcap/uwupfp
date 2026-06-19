@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-
+    
     const LAYER_ORDER = [
         'background', 'body', 'eyes', 'face', 'hair', 'costume', 'accessory', 'headgear', 'horn'
     ];
@@ -124,41 +124,45 @@
 
     let activeTab = $state('body');
     let canvasElement: any = $state(null);
-
+    let isRendering = $state(false);
+    
     // 3. Async Image Loading Engine
     async function renderPfp() {
         if (!canvasElement) return;
+        
+        // 1. Instantly trigger the blur effect
+        isRendering = true; 
+        
         const ctx = canvasElement.getContext('2d');
 
-        // Gather the correct image paths based on current state, in the correct bottom-to-top order
         const imagePathsToLoad = LAYER_ORDER.map(layerName => {
             const selectedTraitIndex = currentTraits[layerName];
             return TRAITS[layerName][selectedTraitIndex].src;
         });
 
-        // Load all images in parallel
         const images = await Promise.all(imagePathsToLoad.map(src => {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 const img = new Image();
-                img.crossOrigin = "anonymous"; // Prevents tainted canvas errors when downloading
+                img.crossOrigin = "anonymous"; 
                 img.onload = () => resolve(img);
                 img.onerror = () => {
                     console.warn(`Failed to load: ${src}`);
-                    resolve(null); // Resolve null so one missing file doesn't break the whole app
+                    resolve(null); 
                 };
                 img.src = src;
             });
         }));
 
-        // Clear canvas and draw everything in order
         ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
         
         images.forEach(img => {
             if (img) {
-                // Draw image scaled to the canvas size
                 ctx.drawImage(img, 0, 0, canvasElement.width, canvasElement.height);
             }
         });
+
+        // 2. Remove the blur the moment drawing is complete
+        isRendering = false; 
     }
 
     $effect(() => {
@@ -189,7 +193,7 @@
 <div class="pfp-maker-layout">
     <div class="preview-box field-row">
         <div class="canvas-container">
-    <canvas bind:this={canvasElement} width="2048" height="2048"></canvas>
+    <canvas bind:this={canvasElement} class:is-loading={isRendering} width="2048" height="2048"></canvas>
 </div>
         <div class="action-row">
             <button class="win98-btn" onclick={randomize}>🎲 Randomize</button>
@@ -265,12 +269,20 @@
     }
 
     canvas {
-        /* Magically scale while locking into a perfect 1:1 square */
         max-width: 100%;
         max-height: 100%;
         aspect-ratio: 1;
         object-fit: contain;
         image-rendering: pixelated;
+        
+        /* Smooth transition for the blur effect */
+        transition: filter 0.15s ease-in-out, opacity 0.15s ease-in-out;
+    }
+
+    /* The subtle loading cue */
+    canvas.is-loading {
+        filter: blur(6px);
+        opacity: 0.6;
     }
 
     .action-row {
