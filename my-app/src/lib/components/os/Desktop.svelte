@@ -18,6 +18,27 @@
             width: 640, 
             height: 360 
         },
+        { 
+            id: 'vid-demo2', 
+            title: 'truth_nuke.mov', 
+            src: 'video/IMG_3359.MP4', 
+            width: 1280, 
+            height: 960 
+        },
+        { 
+            id: 'vid-demo3', 
+            title: 'unicorn?.mov', 
+            src: 'video/what.mp4', 
+            width: 720, 
+            height: 720 
+        },
+        { 
+            id: 'vid-demo4', 
+            title: 'pizza.mov', 
+            src: 'video/pizza.mp4', 
+            width: 720, 
+            height: 1280 
+        },
     ];
 
     const launchPfpApp = () => {
@@ -37,7 +58,26 @@
         openWindow('notepad', 'untitled - Notepad', 500, 400);
     };
     const launchVideo = (vid) => {
-        openWindow(vid.id, vid.title, vid.width + 12, vid.height + 40);
+        // 1. Determine the safe available space on the user's screen
+        const isDesktop = window.innerWidth > 768;
+        // Subtract sidebar (320px) and a safety margin (40px)
+        const maxSafeWidth = isDesktop ? window.innerWidth - 360 : window.innerWidth - 40; 
+        // Subtract taskbar (35px) and a safety margin (60px)
+        const maxSafeHeight = window.innerHeight - 95; 
+
+        // 2. Calculate the scale factor to fit the video into the safe space
+        const widthScale = maxSafeWidth / vid.width;
+        const heightScale = maxSafeHeight / vid.height;
+        
+        // Use the smallest scale to maintain aspect ratio (and never scale > 1)
+        const scale = Math.min(1, widthScale, heightScale); 
+
+        // 3. Apply the scale to the video dimensions
+        const finalWidth = Math.floor(vid.width * scale);
+        const finalHeight = Math.floor(vid.height * scale);
+
+        // 4. Open the window with the newly scaled size (plus the window chrome padding)
+        openWindow(vid.id, vid.title, finalWidth + 12, finalHeight + 40);
     };
     onMount(() => {
         launchPfpApp()
@@ -127,8 +167,8 @@
 
 <style>
     .desktop {
-        width : '100%'; 
-        height : '100%';
+        width : 100%; 
+        height : 100%;
         height: 100dvh; /* Dynamic height for modern browsers */
         background-color: #008080;
         position: relative;
@@ -148,6 +188,16 @@
         bottom: 35px; /* Stops exactly at the Taskbar */
         right: 320px; /* Stops exactly at the Sidebar */
         overflow: hidden; /* Prevents windows from dragging outside */
+    }
+    .shortcuts {
+        height: 100%; /* 1. Tells the container exactly where the bottom is */
+        box-sizing: border-box; /* Ensures padding doesn't push it off-screen */
+        padding: 20px;
+        display: flex;
+        flex-direction: column; /* Stack top-to-bottom */
+        flex-wrap: wrap; /* 2. Force it to wrap into a new column when it hits the bottom! */
+        align-content: flex-start; /* 3. Pack the new columns to the left side */
+        gap: 20px 30px; /* 20px vertical gap, 30px horizontal gap between columns */
     }
 
     /* On mobile, remove the right boundary since the sidebar is hidden */
